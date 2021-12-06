@@ -13,7 +13,7 @@ struct mpu9250_dev {
 };
 ```
 
-Dentro de la función mpu9250_probe se hace un devm_kzalloc() para generar dinámicamente una instancia de dicha estructura. A esta instancia se le asigna la estructura i2c_client() del dispositivo y se cargan todos los datos necesarios dentro de la estructura miscdevice (nombre del driver, número minor y la estructura de file-operations). La memoria ocupada por la instancia de mpu9250_dev() es liberada por la función mpu9250_remove() al momento de remover el módulo.
+Dentro de la función lcd_probe se hace un devm_kzalloc() para generar dinámicamente una instancia de dicha estructura. A esta instancia se le asigna la estructura i2c_client() del dispositivo y se cargan todos los datos necesarios dentro de la estructura miscdevice (nombre del driver, número minor y la estructura de file-operations). La memoria ocupada por la instancia de lcd_dev() es liberada por la función lcd_remove() al momento de remover el módulo.
 
 #### File opearation WRITE
 
@@ -21,9 +21,9 @@ Hace uso de la API i2c_master_send():
 
 ```c
 /* Funcion para escribir el dispositivo /dev/mseXX utilizando write() en espacio usuario */
-static ssize_t mpu9250_write(struct file *file, const char __user *buffer, size_t len, loff_t *offset)  {
+static ssize_t lcd_write(struct file *file, const char __user *buffer, size_t len, loff_t *offset)  {
 
-    struct mpu9250_dev *mse; /* Puntero a la estructura privada del device */
+    struct lcd_dev *mse; /* Puntero a la estructura privada del device */
     int wr_stat;
     int error_count = 0;
 
@@ -54,13 +54,13 @@ Hace uso de las APIs i2c_master_send() e i2c_master_recv():
 
 ```c
 /* Funcion para leer el dispositivo /dev/mseXX utilizando read() en espacio usuario */
-static ssize_t mpu9250_read(struct file *file, char __user *userbuf, size_t count, loff_t *ppos)  {
+static ssize_t lcd_read(struct file *file, char __user *userbuf, size_t count, loff_t *ppos)  {
 
-    struct mpu9250_dev *mse; /* Puntero a la estructura privada del device */
+    struct lcd_dev *mse; /* Puntero a la estructura privada del device */
     int rd_stat;
     int error_count = 0;
 
-    /* pr_info("INFO: mpu9250_read() fue invocada.\n"); */
+    /* pr_info("INFO: lcd_read() fue invocada.\n"); */
 
     /* A partir del puntero a file obtengo la estructura completa del device */
     mse = container_of(file->private_data, struct mpu9250_dev, mse_miscdevice);
@@ -86,7 +86,7 @@ static ssize_t mpu9250_read(struct file *file, char __user *userbuf, size_t coun
 1. Abrir una terminal y correr los siguientes comandos:
 
 ```
-export PATH=$PATH:~/MSE/ISO_II/toolchain/arm-mse-linux-gnueabihf/bin
+export PATH=$PATH:~/leonardo/ISO_II/toolchain/arm-mse-linux-gnueabihf/bin
 export CROSS_COMPILE=arm-linux-
 export ARCH=arm
 ```
@@ -95,49 +95,16 @@ export ARCH=arm
 
 3. Ejecutar el comando "make".
 
-4. El módulo a cargar es "mse_mpu9250_driver.c"
+4. El módulo a cargar es "mylcd.c"
 
 ### Insert and remove
 
 Para insertar el módulo:
 1. Dentro de la consola de la SBC navegar hasta el directorio donde se encuentra el módulo compilado
-2. Ejecutar: "insmod mse_mpu9250_driver.ko"
+2. Ejecutar: "insmod mylcd.ko"
 3. Debe observarse el mensaje de que el módulo fue cargado correctamente, el nombre del device y el número minor asignado.
 
 Para remover el módulo:
-1. Ejecutar: "rmmod mse_mpu9250_driver.ko"
+1. Ejecutar: "rmmod mylcd.ko"
 2. Debe observarse un mensaje que anuncia que el módulo fue removido correctamente.
 
-### Verificacion de carga
-Se verificó que el driver se haya registrado a si mismo dentro del platform bus:
-```
-ls -l /sys/bus/i2c/drivers
-```
-TODO: agregar imagen
-
-```
-ls -l /sys/bus/i2c/devices
-```
-TODO: agregar imagen
-
-```
-ls /sys/bus/i2c/drivers/mse_driver
-```
-TODO: agregar imagen
-
-Por otro lado se verificó que el módulo fuese visible dentro de /sys y el dispositivo haya sido registrado dentro de la clase correspondiente al framework utilizado:
-```
-ls -l /sys/module/mpu9250_i2c_driver/drivers
-```
-TODO: agregar imagen
-
-```
-ls /sys/class/misc
-```
-TODO: agregar imagen
-
-Por último, se verificó que udev haya creado el file device en devtmpfs:
-```
-ls -l /dev
-```
-TODO: agregar imagen
