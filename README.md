@@ -8,7 +8,9 @@
 Setear variables de entorno:
 
 $ export PATH=$PATH:$HOME/ISO_II/toolchain/arm-mse-linux-gnueabihf/bin
+
 $ export CROSS_COMPILE=arm-linux-
+
 $ export ARCH=arm
 
 
